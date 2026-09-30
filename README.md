@@ -33,7 +33,7 @@ omp plugin uninstall omp-launch               # 卸载（名称以 `omp plugin l
 
 ### 用包管理器装依赖
 
-扩展依赖 `ffmpeg-static` / `ffprobe-static` 两个包，在**仓库目录**执行、任选其一（仓库自带 `package-lock.json`，默认用 npm）：
+依赖只有 `ffprobe-static`（自带 ffprobe 二进制，随包分发，不需要下载）。在**仓库目录**执行、任选其一（仓库自带 `package-lock.json`）：
 
 ```bash
 npm install          # npm
@@ -42,18 +42,16 @@ yarn install         # yarn
 bun install          # bun
 ```
 
+**ffmpeg 的来源顺序**（安装时与运行时用同一套判断）：
+
+1. `FFMPEG_BIN` 环境变量指向的文件；
+2. `PATH` 上的 `ffmpeg`；
+3. `<配置目录>/bin/ffmpeg[.exe]`（第 4 步下载后的存放位置）；
+4. 前三者都没有 → 安装时由 `postinstall`（`scripts/ensure-ffmpeg.mjs`）下载一次静态二进制到第 3 步的位置，约 36MB。可用 `FFMPEG_BINARIES_URL` 指向镜像源。
+
+也就是说：**系统里已有 ffmpeg 就不会下载任何东西**；只想用系统 ffmpeg 也无需任何配置。
+
 从 GitHub 安装时依赖由 npm 一并装好；**本地目录安装是 link**，不替源目录装依赖，需要在该目录自己先跑一次上面的命令。
-
-新版包管理器默认拦截依赖的安装脚本，`ffmpeg-static` 的二进制要手动批准：
-
-```bash
-npm install-scripts approve ffmpeg-static   # npm（npm install-scripts ls 看审批状态）
-pnpm approve-builds ffmpeg-static           # pnpm（不带包名则交互选择，--all 全批）
-bun pm trust ffmpeg-static                  # bun（bun pm untrusted 看被拦下的）
-node node_modules/ffmpeg-static/install.js  # 兜底：直接跑它自己的安装脚本
-```
-
-不批准也能用：`ffprobe-static` 自带二进制；`ffmpeg` / `ffprobe` 缺失时回退到 `PATH` 上的同名命令。**实际常见情形是 `ffmpeg-static` 的二进制没被下载**（目录里只有 `index.js`/`install.js`）——此时用的就是系统 `ffmpeg`，功能不受影响；`ffprobe-static` 的 `bin/win32/x64/ffprobe.exe` 随包分发的，删掉其他平台目录可以省下几百 MB。
 
 ## 使用
 
@@ -286,7 +284,8 @@ src/color-blocks.ts ffmpeg → RGB → 真彩半块行
 src/probe.ts        ffprobe 探测宽高/帧率/时长
 src/config.ts       配置与素材发现（含写回）
 src/settings.ts     交互式设置面板（SettingsList 主菜单 + SelectList 子菜单）
-src/ffmpeg.ts       ffmpeg 路径解析（ffmpeg-static → PATH）
+src/ffmpeg.ts       ffmpeg 路径解析（FFMPEG_BIN → PATH → 安装时下载的副本）
+scripts/ensure-ffmpeg.mjs  postinstall：前三处都没有 ffmpeg 时才下载静态二进制
 ```
 
 开发与验证约定（模块分层、哪些模块能离线跑、改动的验证阶梯）见 [`AGENTS.md`](AGENTS.md)。

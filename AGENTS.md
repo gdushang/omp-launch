@@ -51,7 +51,8 @@ Layering rules worth keeping:
 | Path | Purpose |
 |---|---|
 | `src/` | All code, 13 TypeScript modules, flat (no subdirectories) |
-| `node_modules/` | Only `ffmpeg-static` + `ffprobe-static` (and their download-time transitive deps). `@oh-my-pi/*` is **not** present — the host provides it |
+| `scripts/` | `ensure-ffmpeg.mjs`: the `postinstall` hook that fetches a static ffmpeg only when `FFMPEG_BIN`, `PATH` and the local copy all lack one |
+| `node_modules/` | Only `ffprobe-static` (ships its own binary). `@oh-my-pi/*` is **not** present — the host provides it |
 
 Config lives outside the repo: `<cwd>/.omp/launch/launch.json` or `~/.omp/agent/launch/launch.json` (or `$PI_CODING_AGENT_DIR/launch/`). The SIXEL cache sits in `cache/` next to it.
 
@@ -69,9 +70,9 @@ bun build src/sixel-worker.ts --target=bun --external "@oh-my-pi/*" --outdir /tm
 # Run it for real (a terminal, not a pipe: the overlay needs a TTY)
 omp --extension <repo directory>
 
-# Install/refresh binaries
+# Install dependencies (ffprobe-static ships its own binary; ffmpeg is taken from PATH,
+# or downloaded by scripts/ensure-ffmpeg.mjs when PATH has none)
 npm install
-npm install-scripts approve ffmpeg-static   # npm blocks install scripts by default
 
 # Inside a running session: reload the extension without restarting
 /reload-plugins
@@ -140,9 +141,9 @@ Offline limits: `src/index.ts`, `player.ts`, `settings.ts`, `window.ts`, `sixel-
 - **Runtime: Bun**, embedded in the host `omp` binary. Sources are run as TypeScript — do not add a bundler, `tsconfig.json`, or a build output directory.
 - `"type": "module"`, ESM only, `node:` builtins are fine (Bun implements them).
 - Host modules `@oh-my-pi/pi-coding-agent` and `@oh-my-pi/pi-tui` exist only inside omp. In a Worker, resolve them on the main thread and pass the absolute URL (`piTuiModuleUrl`, built from `Bun.main` / `Bun.resolveSync`) — a static worker import fails.
-- ffmpeg/ffprobe come from `ffmpeg-static` / `ffprobe-static` when the binaries are present, otherwise from `PATH`. Note the `ffmpeg-static` binary is often **not** downloaded (npm blocks install scripts), so the PATH fallback is the real path in practice.
+- ffprobe comes from `ffprobe-static` when present, otherwise `PATH`. ffmpeg is resolved by `src/ffmpeg.ts` as `FFMPEG_BIN` → `PATH` → `<launch dir>/bin/ffmpeg[.exe]`; the last one is what `scripts/ensure-ffmpeg.mjs` downloads during `postinstall`, and only when the first two find nothing.
 - Package manager: npm (`package-lock.json`, `lockfileVersion: 3`, registry pinned to a mirror). Adding a dependency means adding it to `package.json` **and** committing the lockfile.
-- Windows-first development. Platform-sensitive spots: cache write uses `rm` before `rename`; ffmpeg/ffprobe are spawned as platform `.exe` from the static packages; config paths accept both `\` and `/`.
+- Windows-first development. Platform-sensitive spots: cache write uses `rm` before `rename`; the ffmpeg obtained by `scripts/ensure-ffmpeg.mjs` lands as `ffmpeg.exe` under `<launch dir>/bin/`; config paths accept both `\` and `/`.
 - Never commit generated artifacts or scratch scripts; run one-off checks from a temp directory outside the repo.
 
 ## Testing & QA
