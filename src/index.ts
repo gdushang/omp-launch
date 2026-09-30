@@ -1,5 +1,5 @@
 // omp-launch: extension entry — protocol pixels (render resolution capped, always fitted to the window), half-blocks as fallback.
-import { existsSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@oh-my-pi/pi-coding-agent";
@@ -1171,6 +1171,10 @@ export default function ompLaunch(pi: ExtensionAPI) {
 		if (!ctx.hasUI || ctx.agent?.kind !== "main") return;
 		const config = loadConfig(ctx.cwd);
 		if (!config.enabled) return;
+
+		// `bun` blocks the postinstall of packages it does not trust, so the install-time mkdir
+		// may never have run: make sure the config directory exists before anything reads it.
+		mkdirSync(config.dir ?? userLaunchDir(), { recursive: true });
 
 		// No await before play(): omp paints the welcome screen in InteractiveMode.init
 		// (interactive-mode.ts:1767) before emitting session_start (:1871), so every

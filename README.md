@@ -51,7 +51,7 @@ bun install          # bun
 
 也就是说：**系统里已有 ffmpeg 就不会下载任何东西**；只想用系统 ffmpeg 也无需任何配置。
 
-安装完成后 `<配置目录>`（`~/.omp/agent/launch/`，根路径可用 `PI_CODING_AGENT_DIR` 覆盖）会被自动创建，把视频放进去即可。
+安装脚本本身会顺带创建 `<配置目录>`（`~/.omp/agent/launch/`，根路径可用 `PI_CODING_AGENT_DIR` 覆盖）。注意 `omp` 用 `bun` 安装插件，而 **bun 会拦截未信任依赖的 `postinstall`**——所以实际上目录由**首次启动 omp** 时创建（插件在 `session_start` 里兜底 `mkdir`）；想让安装期的脚本真正执行，可在 `~/.omp/plugins/` 下跑一次 `bun pm trust omp-launch`。
 
 从 GitHub 安装时依赖由 npm 一并装好；**本地目录安装是 link**，不替源目录装依赖，需要在该目录自己先跑一次上面的命令。
 
@@ -70,10 +70,10 @@ omp install <仓库目录>                          # 或从本地目录安装�
 
 只想本次试一下、不安装：`omp --extension <仓库目录>`（这种方式不会创建配置目录，需要自己 `mkdir -p ~/.omp/agent/launch`）。
 
-**2. 放素材。** 把你自己的视频（`mp4` / `mkv` / `webm` / `mov` / `gif` / `avi` / `wmv` / `m4v` / `apng` / `webp`）放进配置目录（安装时已自动创建）：
+**2. 放素材。** 配置目录由插件在首次启动时创建；想现在就放好素材，一条命令建出来即可：
 
 ```bash
-cp <你的视频> ~/.omp/agent/launch/
+mkdir -p ~/.omp/agent/launch && cp <你的视频> ~/.omp/agent/launch/
 # Windows 上这个目录是 C:\Users\<你>\.omp\agent\launch\
 ```
 
