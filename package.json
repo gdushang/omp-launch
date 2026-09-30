@@ -1,0 +1,14 @@
+{
+  "name": "omp-launch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Startup animation for omp: a video intro rendered via SIXEL, or truecolor half-blocks when the terminal has no SIXEL support.",
+  "omp": {
+    "extensions": ["./src/index.ts"]
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0"
+  }
+}
