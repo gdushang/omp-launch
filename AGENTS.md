@@ -2,14 +2,12 @@
 
 Startup animation extension for [oh-my-pi (omp)](https://github.com/oh-my-pi): a fullscreen overlay plays a video intro before the session UI appears. Two renderers — **SIXEL** (pixel-perfect) and **truecolor half-blocks**. No clip means no animation: startup is skipped and the session UI appears immediately. TypeScript sources are executed directly by omp's embedded Bun; there is **no build step, no bundler, no test suite**.
 
-Repo directory is `omp-splash`, but the package/extension is named `omp-launch` (`package.json`).
-
 ## Project Overview
 
 - Play exactly one animation at startup, then hand the screen to omp. Nothing is played outside an interactive main session (`ctx.hasUI && ctx.agent.kind === "main"`).
 - The picture always fills the window: SIXEL encodes to the measured grid, half-blocks paint the whole grid.
 - SIXEL is **pre-encoded and cached** per terminal geometry, because encoding 169 frames costs ~5.6s. Startup reads the cache file (measured ~233ms to first frame) instead of re-encoding.
-- No built-in clip library: the animation comes from the user's own video (config directory, `source`, or `OMP_LAUNCH`). `clips/` holds sample files only and is never referenced by code.
+- No built-in clip library: the animation comes from the user's own video (config directory, `source`, or `OMP_LAUNCH`).
 
 ## Architecture & Data Flow
 
@@ -53,7 +51,6 @@ Layering rules worth keeping:
 | Path | Purpose |
 |---|---|
 | `src/` | All code, 13 TypeScript modules, flat (no subdirectories) |
-| `clips/` | Sample videos + `LICENSE` (BSD-3-Clause). Not a built-in library; copy files into the config directory to use them |
 | `node_modules/` | Only `ffmpeg-static` + `ffprobe-static` (and their download-time transitive deps). `@oh-my-pi/*` is **not** present — the host provides it |
 
 Config lives outside the repo: `<cwd>/.omp/launch/launch.json` or `~/.omp/agent/launch/launch.json` (or `$PI_CODING_AGENT_DIR/launch/`). The SIXEL cache sits in `cache/` next to it.
@@ -70,7 +67,7 @@ bun build src/index.ts --target=bun --external "@oh-my-pi/*" --outdir /tmp/omp-c
 bun build src/sixel-worker.ts --target=bun --external "@oh-my-pi/*" --outdir /tmp/omp-check
 
 # Run it for real (a terminal, not a pipe: the overlay needs a TTY)
-omp --extension F:/Project/ChuangHeng/github/omp-splash
+omp --extension <repo directory>
 
 # Install/refresh binaries
 npm install
