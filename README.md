@@ -51,31 +51,33 @@ bun install          # bun
 
 也就是说：**系统里已有 ffmpeg 就不会下载任何东西**；只想用系统 ffmpeg 也无需任何配置。
 
+安装完成后 `<配置目录>`（`~/.omp/agent/launch/`，根路径可用 `PI_CODING_AGENT_DIR` 覆盖）会被自动创建，把视频放进去即可。
+
 从 GitHub 安装时依赖由 npm 一并装好；**本地目录安装是 link**，不替源目录装依赖，需要在该目录自己先跑一次上面的命令。
 
 ## 使用
 
 ### 快速开始
 
-四步跑通：放素材 → 装扩展 → 启动一次建缓存 → 之后每次启动自动播放。
+四步跑通：装扩展 → 放素材 → 启动一次建缓存 → 之后每次启动自动播放。
 
-**1. 放素材。** 把你自己的视频（`mp4` / `mkv` / `webm` / `mov` / `gif` / `avi` / `wmv` / `m4v` / `apng` / `webp`）放进配置目录：
-
-```bash
-mkdir -p ~/.omp/agent/launch && cp <你的视频> ~/.omp/agent/launch/
-# Windows 上这个目录是 C:\Users\<你>\.omp\agent\launch\
-```
-
-也可以不放这里，改用路径指定（`launch.json` 的 `source` 或环境变量 `OMP_LAUNCH`，见「素材与配置」）。
-
-**2. 装上扩展。**
+**1. 装上扩展。**
 
 ```bash
 omp install github:gdushang/omp-launch         # 从 GitHub 安装
 omp install <仓库目录>                          # 或从本地目录安装（link，改动即时生效）
 ```
 
-只想本次试一下、不安装：`omp --extension <仓库目录>`。
+只想本次试一下、不安装：`omp --extension <仓库目录>`（这种方式不会创建配置目录，需要自己 `mkdir -p ~/.omp/agent/launch`）。
+
+**2. 放素材。** 把你自己的视频（`mp4` / `mkv` / `webm` / `mov` / `gif` / `avi` / `wmv` / `m4v` / `apng` / `webp`）放进配置目录（安装时已自动创建）：
+
+```bash
+cp <你的视频> ~/.omp/agent/launch/
+# Windows 上这个目录是 C:\Users\<你>\.omp\agent\launch\
+```
+
+也可以不放这里，改用路径指定（`launch.json` 的 `source` 或环境变量 `OMP_LAUNCH`，见「素材与配置」）。
 
 **3. 启动一次，把缓存建起来。** 直接 `omp`。**第一次**在该终端尺寸下没有缓存，屏幕显示「正在预编码…」与实时进度条，编码结束即进首页（**本次不播素材**）；**之后每次启动**直接读缓存播放（实测首帧 233ms），完整播完才显示首页。
 

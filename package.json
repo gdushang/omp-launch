@@ -1,6 +1,6 @@
 {
   "name": "omp-launch",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "Startup animation for omp: a video intro rendered via SIXEL, or truecolor half-blocks when the terminal has no SIXEL support.",

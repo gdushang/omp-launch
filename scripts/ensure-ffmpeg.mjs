@@ -11,8 +11,13 @@ const BASE_URL = (
 ).replace(/\/+$/, "");
 const EXE_NAME = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
 const AGENT_DIR = process.env.PI_CODING_AGENT_DIR || join(homedir(), ".omp", "agent");
-const BIN_DIR = join(AGENT_DIR, "launch", "bin");
+const LAUNCH_DIR = join(AGENT_DIR, "launch");
+const BIN_DIR = join(LAUNCH_DIR, "bin");
 const TARGET = join(BIN_DIR, EXE_NAME);
+
+// The config directory is where clips and `launch.json` live, so it exists right after install.
+mkdirSync(LAUNCH_DIR, { recursive: true });
+console.log(`omp-launch：配置目录 ${LAUNCH_DIR}`);
 
 /** True when `ffmpeg` resolves on PATH: the copy the extension itself would spawn. */
 function onPath() {

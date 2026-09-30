@@ -51,7 +51,7 @@ Layering rules worth keeping:
 | Path | Purpose |
 |---|---|
 | `src/` | All code, 13 TypeScript modules, flat (no subdirectories) |
-| `scripts/` | `ensure-ffmpeg.mjs`: the `postinstall` hook that fetches a static ffmpeg only when `FFMPEG_BIN`, `PATH` and the local copy all lack one |
+| `scripts/` | `ensure-ffmpeg.mjs`: the `postinstall` hook — creates the launch config directory, then fetches a static ffmpeg only when `FFMPEG_BIN`, `PATH` and the local copy all lack one |
 | `node_modules/` | Only `ffprobe-static` (ships its own binary). `@oh-my-pi/*` is **not** present — the host provides it |
 
 Config lives outside the repo: `<cwd>/.omp/launch/launch.json` or `~/.omp/agent/launch/launch.json` (or `$PI_CODING_AGENT_DIR/launch/`). The SIXEL cache sits in `cache/` next to it.
